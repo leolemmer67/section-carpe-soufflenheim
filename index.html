@@ -501,11 +501,11 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
+    <!-- Firebase SDK - Version Compat -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
 
+    <script>
         // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD4cAaaIQ6ghZFtYxV3TqNWS552EtlwoNM",
@@ -517,12 +517,11 @@
         };
 
         // Initialiser Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // Rendre disponible globalement
         window.db = db;
-        window.firestoreModules = { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot };
     </script>
 
     <script>
@@ -539,9 +538,8 @@
 
         // Charger les sessions depuis Firebase
         async function loadSessions() {
-            const { collection, getDocs, doc, setDoc } = window.firestoreModules;
-            const sessionsRef = collection(window.db, 'sessions');
-            const snapshot = await getDocs(sessionsRef);
+            const sessionsRef = db.collection('sessions');
+            const snapshot = await sessionsRef.get();
             
             if (snapshot.empty) {
                 // Initialiser les sessions si elles n'existent pas
@@ -554,7 +552,7 @@
                 
                 // Sauvegarder dans Firebase
                 for (let session of sessions) {
-                    await setDoc(doc(window.db, 'sessions', `session${session.id}`), session);
+                    await db.collection('sessions').doc(`session${session.id}`).set(session);
                 }
             } else {
                 // Charger depuis Firebase
@@ -611,10 +609,9 @@
 
         // Écouter les changements en temps réel
         function setupRealtimeListener() {
-            const { collection, onSnapshot } = window.firestoreModules;
-            const sessionsRef = collection(window.db, 'sessions');
+            const sessionsRef = db.collection('sessions');
             
-            onSnapshot(sessionsRef, (snapshot) => {
+            sessionsRef.onSnapshot((snapshot) => {
                 sessions = [];
                 snapshot.forEach((doc) => {
                     sessions.push(doc.data());
@@ -792,7 +789,6 @@
             // Simuler le paiement PayPal (en production, intégrez l'API PayPal)
             if (confirm(`Confirmer la réservation du poste ${selectedSpot} pour ${name} ?\n\nVous serez redirigé vers PayPal pour payer 30€.`)) {
                 // Enregistrer la réservation dans Firebase
-                const { doc, updateDoc } = window.firestoreModules;
                 const session = sessions[currentSession];
                 
                 session.reservations.push({
@@ -803,7 +799,7 @@
                     date: new Date().toISOString()
                 });
                 
-                await updateDoc(doc(window.db, 'sessions', `session${session.id}`), {
+                await db.collection('sessions').doc(`session${session.id}`).update({
                     reservations: session.reservations
                 });
                 
