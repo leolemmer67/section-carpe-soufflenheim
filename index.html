@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Section Carpe de Soufflenheim - Week-ends Libre</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: white;
+            border-radius: 50%;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .session-nav {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .session-info {
+            flex: 1;
+            text-align: center;
+        }
+
+        .session-info h2 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .session-info p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .nav-btn {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #2a5298;
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .pond-container {
+            position: relative;
+            width: 100%;
+            padding: 40px;
+            background: #f0f0f0;
+        }
+
+        .pond-image {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .pond-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .fishing-spot {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        /* Responsive pour mobile */
+        @media (max-width: 768px) {
+            .fishing-spot {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9em;
+                border: 2px solid white;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .fishing-spot {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8em;
+                border: 2px solid white;
+            }
+        }
+
+        .fishing-spot:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+
+        .fishing-spot.reserved {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .fishing-spot.reserved:hover {
+            transform: scale(1);
+        }
+
+        .fishing-spot.dragging {
+            opacity: 0.5;
+            cursor: move;
+        }
+
+        .info-panel {
+            background: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .price {
+            font-size: 2em;
+            color: #1e3c72;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .admin-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+            transition: all 0.3s;
+        }
+
+        .admin-link:hover {
+            background: #ee5a52;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.5);
+        }
+
+        /* Responsive mobile */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .subtitle {
+                font-size: 1em;
+            }
+
+            .session-nav {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .session-info h2 {
+                font-size: 1.4em;
+            }
+
+            .session-info p {
+                font-size: 1em;
+            }
+
+            .nav-btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+
+            .pond-container {
+                padding: 20px;
+            }
+
+            .price {
+                font-size: 1.5em;
+            }
+
+            .legend {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-link {
+                bottom: 10px;
+                right: 10px;
+                padding: 12px 20px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .pond-container {
+                padding: 15px;
+            }
+
+            .info-panel {
+                padding: 20px;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #999;
+        }
+
+        .btn-cancel:hover {
+            background: #888;
+        }
+
+        .edit-mode-info {
+            background: #fff3cd;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #ffc107;
+            display: none;
+        }
+
+        .edit-mode-info.active {
+            display: block;
+        }
+
+        .save-positions-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="logo.png" alt="Logo Section Carpe" id="logoImg">
+            </div>
+            <h1>Section Carpe de Soufflenheim</h1>
+            <p class="subtitle">Week-ends Libre - Réservation en ligne</p>
+        </div>
+
+        <div class="edit-mode-info" id="editModeInfo">
+            <strong>🎯 Mode édition activé</strong> - Glissez-déposez les postes pour les repositionner
+            <button class="save-positions-btn" onclick="savePositions()">💾 Enregistrer les positions</button>
+        </div>
+
+        <div class="session-nav">
+            <button class="nav-btn" id="prevBtn" onclick="changeSession(-1)">◄</button>
+            <div class="session-info">
+                <h2 id="sessionTitle">Session 1</h2>
+                <p id="sessionDate">Aucune date configurée</p>
+                <p style="margin-top: 10px; color: #4CAF50; font-weight: bold;">
+                    <span id="availableSpots">10</span> postes disponibles
+                </p>
+            </div>
+            <button class="nav-btn" id="nextBtn" onclick="changeSession(1)">►</button>
+        </div>
+
+        <div class="pond-container">
+            <div class="pond-image" id="pondImageContainer">
+                <img src="pond.jpg" alt="Étang Landgraben" id="pondImg">
+                <!-- Les postes de pêche seront ajoutés ici dynamiquement -->
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h2>Tarif Week-end</h2>
+            <div class="price">30€ / Week-end</div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Disponible</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #999;"></div>
+                    <span>Réservé</span>
+                </div>
+            </div>
+
+            <p style="margin-top: 20px; color: #666;">
+                Cliquez sur un poste disponible pour réserver votre place
+            </p>
+        </div>
+    </div>
+
+    <a href="admin.html" class="admin-link">⚙️ Admin</a>
+
+    <!-- Modal de réservation -->
+    <div class="modal" id="reservationModal">
+        <div class="modal-content">
+            <h2>Réserver le Poste <span id="modalSpotNumber"></span></h2>
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label>Nom complet *</label>
+                    <input type="text" id="userName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Téléphone *</label>
+                    <input type="tel" id="userPhone" required>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button type="submit" class="btn">Payer 30€ avec PayPal</button>
+                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4cAaaIQ6ghZFtYxV3TqNWS552EtlwoNM",
+            authDomain: "section-carpe-soufflenheim.firebaseapp.com",
+            projectId: "section-carpe-soufflenheim",
+            storageBucket: "section-carpe-soufflenheim.firebasestorage.app",
+            messagingSenderId: "546487618596",
+            appId: "1:546487618596:web:b64b63fe5bb8adb2a7dcb1"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Rendre disponible globalement
+        window.db = db;
+        window.firestoreModules = { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot };
+    </script>
+
+    <script>
+        // Configuration
+        let currentSession = 0;
+        let selectedSpot = null;
+        let editMode = false;
+
+        // Données chargées depuis Firebase
+        let sessions = [];
+
+        // Positions des postes - chargées depuis config.json
+        let spotPositions = [];
+
+        // Charger les sessions depuis Firebase
+        async function loadSessions() {
+            const { collection, getDocs, doc, setDoc } = window.firestoreModules;
+            const sessionsRef = collection(window.db, 'sessions');
+            const snapshot = await getDocs(sessionsRef);
+            
+            if (snapshot.empty) {
+                // Initialiser les sessions si elles n'existent pas
+                sessions = [
+                    { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
+                    { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
+                    { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
+                    { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
+                ];
+                
+                // Sauvegarder dans Firebase
+                for (let session of sessions) {
+                    await setDoc(doc(window.db, 'sessions', `session${session.id}`), session);
+                }
+            } else {
+                // Charger depuis Firebase
+                sessions = [];
+                snapshot.forEach((doc) => {
+                    sessions.push(doc.data());
+                });
+                // Trier par ID
+                sessions.sort((a, b) => a.id - b.id);
+            }
+        }
+
+        // Charger la configuration
+        async function loadConfig() {
+            try {
+                const response = await fetch('config.json');
+                const config = await response.json();
+                spotPositions = config.spotPositions;
+            } catch (error) {
+                console.error('Erreur de chargement de config.json, utilisation des positions par défaut');
+                // Positions par défaut si le fichier n'est pas trouvé
+                spotPositions = [
+                    { top: 15, left: 50 },
+                    { top: 25, left: 75 },
+                    { top: 50, left: 85 },
+                    { top: 75, left: 75 },
+                    { top: 85, left: 50 },
+                    { top: 75, left: 25 },
+                    { top: 50, left: 15 },
+                    { top: 25, left: 25 },
+                    { top: 40, left: 40 },
+                    { top: 40, left: 60 }
+                ];
+            }
+        }
+
+        // Charger les images
+        const pondImg = document.getElementById('pondImg');
+        const logoImg = document.getElementById('logoImg');
+
+        // Utiliser les images locales
+        pondImg.src = 'pond.jpg';
+        logoImg.src = 'logo.png';
+
+        // Initialisation
+        async function init() {
+            await loadConfig();
+            await loadSessions();
+            createFishingSpots();
+            updateDisplay();
+            checkEditMode();
+            setupRealtimeListener();
+        }
+
+        // Écouter les changements en temps réel
+        function setupRealtimeListener() {
+            const { collection, onSnapshot } = window.firestoreModules;
+            const sessionsRef = collection(window.db, 'sessions');
+            
+            onSnapshot(sessionsRef, (snapshot) => {
+                sessions = [];
+                snapshot.forEach((doc) => {
+                    sessions.push(doc.data());
+                });
+                sessions.sort((a, b) => a.id - b.id);
+                updateDisplay();
+            });
+        }
+
+        function checkEditMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            editMode = urlParams.get('edit') === 'true';
+            if (editMode) {
+                document.getElementById('editModeInfo').classList.add('active');
+                enableDragAndDrop();
+            }
+        }
+
+        function enableDragAndDrop() {
+            const spots = document.querySelectorAll('.fishing-spot');
+            spots.forEach(spot => {
+                spot.draggable = true;
+                spot.style.cursor = 'move';
+                
+                spot.addEventListener('dragstart', (e) => {
+                    spot.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                spot.addEventListener('dragend', (e) => {
+                    spot.classList.remove('dragging');
+                    const rect = document.getElementById('pondImageContainer').getBoundingClientRect();
+                    const spotRect = spot.getBoundingClientRect();
+                    
+                    const spotIndex = parseInt(spot.dataset.spot) - 1;
+                    spotPositions[spotIndex] = {
+                        top: ((spotRect.top - rect.top + spotRect.height/2) / rect.height * 100),
+                        left: ((spotRect.left - rect.left + spotRect.width/2) / rect.width * 100)
+                    };
+                });
+            });
+
+            const container = document.getElementById('pondImageContainer');
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const dragging = document.querySelector('.dragging');
+                if (dragging) {
+                    const rect = container.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    dragging.style.left = (x / rect.width * 100) + '%';
+                    dragging.style.top = (y / rect.height * 100) + '%';
+                }
+            });
+        }
+
+        function savePositions() {
+            // Créer le contenu du fichier config.json
+            const configContent = {
+                spotPositions: spotPositions
+            };
+            
+            // Créer un fichier téléchargeable
+            const dataStr = JSON.stringify(configContent, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'config.json';
+            link.click();
+            
+            alert('✅ Positions enregistrées !\n\n📥 Le fichier config.json a été téléchargé.\n\n⚠️ IMPORTANT : Remplacez le fichier config.json sur votre serveur (Netlify) par ce nouveau fichier pour que tout le monde voie les nouvelles positions.');
+        }
+
+        function createFishingSpots() {
+            const container = document.getElementById('pondImageContainer');
+            
+            // Supprimer les anciens postes
+            const oldSpots = container.querySelectorAll('.fishing-spot');
+            oldSpots.forEach(spot => spot.remove());
+
+            // Créer les 10 postes
+            for (let i = 1; i <= 10; i++) {
+                const spot = document.createElement('div');
+                spot.className = 'fishing-spot';
+                spot.textContent = i;
+                spot.dataset.spot = i;
+                
+                const pos = spotPositions[i - 1];
+                spot.style.top = pos.top + '%';
+                spot.style.left = pos.left + '%';
+                spot.style.transform = 'translate(-50%, -50%)';
+                
+                if (!editMode) {
+                    spot.onclick = () => openReservationModal(i);
+                }
+                
+                container.appendChild(spot);
+            }
+        }
+
+        function updateDisplay() {
+            const session = sessions[currentSession];
+            document.getElementById('sessionTitle').textContent = `Session ${currentSession + 1}`;
+            document.getElementById('sessionDate').textContent = session.date;
+            
+            // Mettre à jour les boutons de navigation
+            document.getElementById('prevBtn').disabled = currentSession === 0;
+            document.getElementById('nextBtn').disabled = currentSession === sessions.length - 1;
+            
+            // Mettre à jour l'état des postes
+            const spots = document.querySelectorAll('.fishing-spot');
+            let available = 10;
+            
+            spots.forEach(spot => {
+                const spotNumber = parseInt(spot.dataset.spot);
+                const isReserved = session.reservations.some(r => r.spot === spotNumber);
+                const isClosed = session.closedSpots && session.closedSpots.includes(spotNumber);
+                
+                if (isReserved || isClosed) {
+                    spot.classList.add('reserved');
+                    available--;
+                } else {
+                    spot.classList.remove('reserved');
+                }
+            });
+            
+            document.getElementById('availableSpots').textContent = available;
+        }
+
+        function changeSession(direction) {
+            const newSession = currentSession + direction;
+            if (newSession >= 0 && newSession < sessions.length) {
+                currentSession = newSession;
+                updateDisplay();
+            }
+        }
+
+        function openReservationModal(spotNumber) {
+            if (editMode) return;
+            
+            const session = sessions[currentSession];
+            const isReserved = session.reservations.some(r => r.spot === spotNumber);
+            const isClosed = session.closedSpots && session.closedSpots.includes(spotNumber);
+            
+            if (isReserved) {
+                alert('Ce poste est déjà réservé pour cette session.');
+                return;
+            }
+            
+            if (isClosed) {
+                alert('Ce poste est temporairement fermé pour cette session.');
+                return;
+            }
+            
+            selectedSpot = spotNumber;
+            document.getElementById('modalSpotNumber').textContent = spotNumber;
+            document.getElementById('reservationModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('reservationModal').classList.remove('active');
+            document.getElementById('reservationForm').reset();
+            selectedSpot = null;
+        }
+
+        document.getElementById('reservationForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            
+            // Simuler le paiement PayPal (en production, intégrez l'API PayPal)
+            if (confirm(`Confirmer la réservation du poste ${selectedSpot} pour ${name} ?\n\nVous serez redirigé vers PayPal pour payer 30€.`)) {
+                // Enregistrer la réservation dans Firebase
+                const { doc, updateDoc } = window.firestoreModules;
+                const session = sessions[currentSession];
+                
+                session.reservations.push({
+                    spot: selectedSpot,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    date: new Date().toISOString()
+                });
+                
+                await updateDoc(doc(window.db, 'sessions', `session${session.id}`), {
+                    reservations: session.reservations
+                });
+                
+                // Redirection PayPal (remplacez par votre lien PayPal réel)
+                alert('✅ Réservation enregistrée !\n\nEn production, vous seriez redirigé vers PayPal pour le paiement.');
+                // window.location.href = 'https://www.paypal.com/...';
+                
+                closeModal();
+                // updateDisplay sera appelé automatiquement par le listener temps réel
+            }
+        };
+
+        // Fermer le modal en cliquant en dehors
+        document.getElementById('reservationModal').onclick = function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        };
+
+        // Initialiser au chargement
+        window.onload = init;
+    </script>
+</body>
+</html>
