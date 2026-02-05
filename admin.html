@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Section Carpe de Soufflenheim</title>
     
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         * {
             margin: 0;
@@ -361,15 +358,54 @@
     </div>
 
     <script>
-        // 🔥 CONFIGURATION SUPABASE
+        // 🔥 CONFIGURATION SUPABASE (API REST - Sans SDK)
         const SUPABASE_URL = 'https://drhsdlzhxkbamwcskblr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaHNkbHpoeGtiYW13Y3NrYmxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNjg0NDMsImV4cCI6MjA4NTg0NDQ0M30.8nifIWVXkk0VXrlP4zeyMpEhIA-JrWh1Y6P94OdlH_g';
-        
-        // Initialiser Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const ADMIN_PASSWORD = 'Souffcarpe1664';
         let sessions = [];
+        let realtimeInterval = null;
+
+        // API REST Supabase - GET
+        async function supabaseGet() {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*&order=session_id.asc`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            return await response.json();
+        }
+
+        // API REST Supabase - UPDATE
+        async function supabaseUpdate(sessionId, data) {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?session_id=eq.${sessionId}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(data)
+            });
+            return response.ok;
+        }
+
+        // API REST Supabase - INSERT
+        async function supabaseInsert(data) {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(data)
+            });
+            return response.ok;
+        }
 
         // Login
         document.getElementById('loginForm').onsubmit = function(e) {
@@ -385,25 +421,30 @@
             }
         };
 
-        // Charger les sessions depuis Supabase
         async function loadSessions() {
-            const { data, error } = await supabase
-                .from('sessions')
-                .select('*')
-                .order('session_id', { ascending: true });
-
-            if (error) {
-                console.error('Erreur Supabase:', error);
-                return;
-            }
-
-            if (data) {
-                sessions = data.map(row => ({
-                    id: row.session_id,
-                    date: row.date,
-                    reservations: row.reservations || [],
-                    closedSpots: row.closed_spots || []
-                }));
+            try {
+                const data = await supabaseGet();
+                if (data && data.length > 0) {
+                    sessions = data.map(row => ({
+                        id: row.session_id,
+                        date: row.date,
+                        reservations: row.reservations || [],
+                        closedSpots: row.closed_spots || []
+                    }));
+                } else {
+                    // Créer les sessions par défaut
+                    for (let i = 1; i <= 4; i++) {
+                        await supabaseInsert({
+                            session_id: i,
+                            date: 'À configurer',
+                            reservations: [],
+                            closed_spots: []
+                        });
+                    }
+                    await loadSessions();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
             }
         }
 
@@ -414,20 +455,12 @@
             setupRealtimeListener();
         }
 
-        // Écouter les changements en temps réel
         function setupRealtimeListener() {
-            supabase
-                .channel('admin-sessions-changes')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'sessions' }, 
-                    async (payload) => {
-                        console.log('Changement détecté:', payload);
-                        await loadSessions();
-                        displaySessions();
-                        updateStats();
-                    }
-                )
-                .subscribe();
+            realtimeInterval = setInterval(async () => {
+                await loadSessions();
+                displaySessions();
+                updateStats();
+            }, 3000);
         }
 
         function updateStats() {
@@ -525,19 +558,13 @@
 
         async function updateDate(sessionIndex, newDate) {
             const session = sessions[sessionIndex];
+            const success = await supabaseUpdate(session.id, { date: newDate });
             
-            const { error } = await supabase
-                .from('sessions')
-                .update({ date: newDate })
-                .eq('session_id', session.id);
-            
-            if (error) {
+            if (success) {
+                showAlert('✅ Date mise à jour avec succès !');
+            } else {
                 showAlert('❌ Erreur lors de la mise à jour');
-                console.error(error);
-                return;
             }
-            
-            showAlert('✅ Date mise à jour avec succès !');
         }
 
         async function toggleSpotStatus(sessionIndex, spotNumber) {
@@ -553,15 +580,7 @@
                 showAlert(`🔒 Poste ${spotNumber} fermé !`);
             }
             
-            const { error } = await supabase
-                .from('sessions')
-                .update({ closed_spots: newClosedSpots })
-                .eq('session_id', session.id);
-            
-            if (error) {
-                showAlert('❌ Erreur lors de la mise à jour');
-                console.error(error);
-            }
+            await supabaseUpdate(session.id, { closed_spots: newClosedSpots });
         }
 
         async function deleteReservation(sessionIndex, resIndex) {
@@ -569,18 +588,13 @@
                 const session = sessions[sessionIndex];
                 const newReservations = session.reservations.filter((_, i) => i !== resIndex);
                 
-                const { error } = await supabase
-                    .from('sessions')
-                    .update({ reservations: newReservations })
-                    .eq('session_id', session.id);
+                const success = await supabaseUpdate(session.id, { reservations: newReservations });
                 
-                if (error) {
+                if (success) {
+                    showAlert('✅ Réservation supprimée avec succès !');
+                } else {
                     showAlert('❌ Erreur lors de la suppression');
-                    console.error(error);
-                    return;
                 }
-                
-                showAlert('✅ Réservation supprimée avec succès !');
             }
         }
 
@@ -602,24 +616,13 @@
         async function resetAll() {
             if (confirm('⚠️ ATTENTION : Cela supprimera toutes les réservations et réinitialisera les dates.\n\nÊtes-vous absolument sûr ?')) {
                 if (confirm('Dernière confirmation : Toutes les données seront perdues !')) {
-                    const defaultSessions = [
-                        { session_id: 1, date: 'À configurer', reservations: [], closed_spots: [] },
-                        { session_id: 2, date: 'À configurer', reservations: [], closed_spots: [] },
-                        { session_id: 3, date: 'À configurer', reservations: [], closed_spots: [] },
-                        { session_id: 4, date: 'À configurer', reservations: [], closed_spots: [] }
-                    ];
-                    
-                    for (const session of defaultSessions) {
-                        await supabase
-                            .from('sessions')
-                            .update({
-                                date: session.date,
-                                reservations: session.reservations,
-                                closed_spots: session.closed_spots
-                            })
-                            .eq('session_id', session.session_id);
+                    for (let i = 1; i <= 4; i++) {
+                        await supabaseUpdate(i, {
+                            date: 'À configurer',
+                            reservations: [],
+                            closed_spots: []
+                        });
                     }
-                    
                     showAlert('✅ Tout a été réinitialisé !');
                 }
             }
@@ -642,6 +645,10 @@
                 setTimeout(() => alert.remove(), 500);
             }, 3000);
         }
+
+        window.onbeforeunload = function() {
+            if (realtimeInterval) clearInterval(realtimeInterval);
+        };
     </script>
 </body>
 </html>

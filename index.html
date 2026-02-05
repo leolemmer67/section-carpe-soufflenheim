@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Section Carpe de Soufflenheim - Week-ends Libre</title>
     
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         * {
             margin: 0;
@@ -162,6 +159,23 @@
                 font-size: 0.9em;
                 border: 2px solid white;
             }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .subtitle {
+                font-size: 1em;
+            }
+
+            .session-nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .pond-container {
+                padding: 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -243,25 +257,6 @@
             background: #ee5a52;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255,107,107,0.5);
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .subtitle {
-                font-size: 1em;
-            }
-
-            .session-nav {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .pond-container {
-                padding: 20px;
-            }
         }
 
         .modal {
@@ -481,27 +476,50 @@
     <a href="admin.html" class="admin-link">⚙️ Admin</a>
 
     <script>
-        // 🔥 CONFIGURATION SUPABASE
+        // 🔥 CONFIGURATION SUPABASE (API REST - Sans SDK)
         const SUPABASE_URL = 'https://drhsdlzhxkbamwcskblr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaHNkbHpoeGtiYW13Y3NrYmxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNjg0NDMsImV4cCI6MjA4NTg0NDQ0M30.8nifIWVXkk0VXrlP4zeyMpEhIA-JrWh1Y6P94OdlH_g';
-        
-        // Initialiser Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let sessions = [];
         let currentSession = 0;
         let selectedSpot = null;
         let editMode = false;
         let spotPositions = [];
+        let realtimeInterval = null;
 
-        // Charger config.json pour les positions
+        // API REST Supabase - GET
+        async function supabaseGet() {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*&order=session_id.asc`, {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            return await response.json();
+        }
+
+        // API REST Supabase - UPDATE
+        async function supabaseUpdate(sessionId, data) {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?session_id=eq.${sessionId}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(data)
+            });
+            return response.ok;
+        }
+
+        // Charger config.json
         async function loadConfig() {
             try {
                 const response = await fetch('config.json');
                 const config = await response.json();
                 spotPositions = config.spotPositions;
             } catch (error) {
-                console.log('Config non trouvé, utilisation des positions par défaut');
                 spotPositions = [
                     { top: 13.378809550005503, left: 67.04166666666667 },
                     { top: 9.503245681593135, left: 71.625 },
@@ -517,61 +535,34 @@
             }
         }
 
-        // Charger les sessions depuis Supabase
         async function loadSessions() {
-            const { data, error } = await supabase
-                .from('sessions')
-                .select('*')
-                .order('session_id', { ascending: true });
-
-            if (error) {
-                console.error('Erreur Supabase:', error);
-                // Initialiser avec des données par défaut si la table est vide
-                await initializeDefaultSessions();
-                return;
-            }
-
-            if (data && data.length > 0) {
-                sessions = data.map(row => ({
-                    id: row.session_id,
-                    date: row.date,
-                    reservations: row.reservations || [],
-                    closedSpots: row.closed_spots || []
-                }));
-            } else {
-                await initializeDefaultSessions();
+            try {
+                const data = await supabaseGet();
+                if (data && data.length > 0) {
+                    sessions = data.map(row => ({
+                        id: row.session_id,
+                        date: row.date,
+                        reservations: row.reservations || [],
+                        closedSpots: row.closed_spots || []
+                    }));
+                } else {
+                    sessions = [
+                        { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
+                        { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
+                        { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
+                        { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
+                    ];
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
             }
         }
 
-        // Initialiser les sessions par défaut
-        async function initializeDefaultSessions() {
-            const defaultSessions = [
-                { session_id: 1, date: 'À configurer', reservations: [], closed_spots: [] },
-                { session_id: 2, date: 'À configurer', reservations: [], closed_spots: [] },
-                { session_id: 3, date: 'À configurer', reservations: [], closed_spots: [] },
-                { session_id: 4, date: 'À configurer', reservations: [], closed_spots: [] }
-            ];
-
-            for (const session of defaultSessions) {
-                await supabase.from('sessions').insert(session);
-            }
-
-            await loadSessions();
-        }
-
-        // Écouter les changements en temps réel
         function setupRealtimeListener() {
-            supabase
-                .channel('sessions-changes')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'sessions' }, 
-                    async (payload) => {
-                        console.log('Changement détecté:', payload);
-                        await loadSessions();
-                        updateDisplay();
-                    }
-                )
-                .subscribe();
+            realtimeInterval = setInterval(async () => {
+                await loadSessions();
+                updateDisplay();
+            }, 3000);
         }
 
         async function init() {
@@ -632,10 +623,7 @@
         }
 
         function savePositions() {
-            const configContent = {
-                spotPositions: spotPositions
-            };
-            
+            const configContent = { spotPositions: spotPositions };
             const dataStr = JSON.stringify(configContent, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
@@ -643,13 +631,11 @@
             link.href = url;
             link.download = 'config.json';
             link.click();
-            
-            alert('✅ Positions enregistrées !\n\n📥 Le fichier config.json a été téléchargé.\n\n⚠️ IMPORTANT : Remplacez le fichier config.json sur votre serveur (Netlify) par ce nouveau fichier.');
+            alert('✅ Positions enregistrées !');
         }
 
         function createFishingSpots() {
             const container = document.getElementById('pondImageContainer');
-            
             const oldSpots = container.querySelectorAll('.fishing-spot');
             oldSpots.forEach(spot => spot.remove());
 
@@ -755,30 +741,25 @@
                     date: new Date().toISOString()
                 }];
                 
-                const { error } = await supabase
-                    .from('sessions')
-                    .update({ reservations: newReservations })
-                    .eq('session_id', session.id);
+                const success = await supabaseUpdate(session.id, { reservations: newReservations });
                 
-                if (error) {
+                if (!success) {
                     alert('❌ Erreur lors de la réservation. Réessayez.');
-                    console.error(error);
                     return;
                 }
                 
-                alert('✅ Réservation enregistrée !\n\nVous allez être redirigé vers PayPal.');
-                
-                // Redirection PayPal - REMPLACEZ par votre lien PayPal réel
+                alert('✅ Réservation enregistrée !');
                 window.location.href = 'https://www.paypal.me/votrecompte/30EUR';
-                
                 closeModal();
             }
         };
 
         document.getElementById('reservationModal').onclick = function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+            if (e.target === this) closeModal();
+        };
+
+        window.onbeforeunload = function() {
+            if (realtimeInterval) clearInterval(realtimeInterval);
         };
 
         window.onload = init;
