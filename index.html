@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Section Carpe de Soufflenheim - Week-ends Libre</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         * {
             margin: 0;
@@ -151,7 +155,6 @@
             z-index: 10;
         }
 
-        /* Responsive pour mobile */
         @media (max-width: 768px) {
             .fishing-spot {
                 width: 40px;
@@ -242,7 +245,6 @@
             box-shadow: 0 6px 20px rgba(255,107,107,0.5);
         }
 
-        /* Responsive mobile */
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -253,68 +255,11 @@
             }
 
             .session-nav {
-                padding: 15px 20px;
                 flex-direction: column;
                 gap: 15px;
             }
 
-            .session-info h2 {
-                font-size: 1.4em;
-            }
-
-            .session-info p {
-                font-size: 1em;
-            }
-
-            .nav-btn {
-                padding: 12px 20px;
-                font-size: 1em;
-            }
-
             .pond-container {
-                padding: 20px;
-            }
-
-            .price {
-                font-size: 1.5em;
-            }
-
-            .legend {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .admin-link {
-                bottom: 10px;
-                right: 10px;
-                padding: 12px 20px;
-                font-size: 0.9em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-
-            .header {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-
-            .logo {
-                width: 60px;
-                height: 60px;
-            }
-
-            .pond-container {
-                padding: 15px;
-            }
-
-            .info-panel {
                 padding: 20px;
             }
         }
@@ -342,24 +287,29 @@
             border-radius: 20px;
             max-width: 500px;
             width: 90%;
-            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
-        .modal-content h2 {
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
             color: #1e3c72;
-            margin-bottom: 20px;
+            font-size: 2em;
+            margin-bottom: 10px;
         }
 
         .form-group {
-            margin: 20px 0;
-            text-align: left;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
             color: #333;
             font-weight: bold;
+            margin-bottom: 8px;
         }
 
         .form-group input {
@@ -370,52 +320,79 @@
             font-size: 1em;
         }
 
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
         .btn {
-            background: #4CAF50;
-            color: white;
+            flex: 1;
+            padding: 15px;
             border: none;
-            padding: 15px 30px;
             border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 1.1em;
-            margin: 10px;
             transition: all 0.3s;
         }
 
-        .btn:hover {
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
             background: #45a049;
-            transform: translateY(-2px);
         }
 
-        .btn-cancel {
-            background: #999;
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
         }
 
-        .btn-cancel:hover {
-            background: #888;
+        .btn-secondary:hover {
+            background: #ccc;
         }
 
         .edit-mode-info {
-            background: #fff3cd;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 2px solid #ffc107;
             display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff9800;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            font-weight: bold;
         }
 
         .edit-mode-info.active {
-            display: block;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .save-positions-btn {
-            background: #28a745;
-            color: white;
+            background: white;
+            color: #ff9800;
             border: none;
-            padding: 12px 25px;
+            padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 15px;
+        }
+
+        .save-positions-btn:hover {
+            background: #f0f0f0;
         }
     </style>
 </head>
@@ -423,22 +400,17 @@
     <div class="container">
         <div class="header">
             <div class="logo">
-                <img src="logo.png" alt="Logo Section Carpe" id="logoImg">
+                <img id="logoImg" src="logo.png" alt="Logo">
             </div>
             <h1>Section Carpe de Soufflenheim</h1>
-            <p class="subtitle">Week-ends Libre - Réservation en ligne</p>
-        </div>
-
-        <div class="edit-mode-info" id="editModeInfo">
-            <strong>🎯 Mode édition activé</strong> - Glissez-déposez les postes pour les repositionner
-            <button class="save-positions-btn" onclick="savePositions()">💾 Enregistrer les positions</button>
+            <p class="subtitle">🎣 Week-ends Libre - Étang Landgraben</p>
         </div>
 
         <div class="session-nav">
             <button class="nav-btn" id="prevBtn" onclick="changeSession(-1)">◄</button>
             <div class="session-info">
                 <h2 id="sessionTitle">Session 1</h2>
-                <p id="sessionDate">Aucune date configurée</p>
+                <p id="sessionDate">Chargement...</p>
                 <p style="margin-top: 10px; color: #4CAF50; font-weight: bold;">
                     <span id="availableSpots">10</span> postes disponibles
                 </p>
@@ -448,14 +420,14 @@
 
         <div class="pond-container">
             <div class="pond-image" id="pondImageContainer">
-                <img src="pond.jpg" alt="Étang Landgraben" id="pondImg">
-                <!-- Les postes de pêche seront ajoutés ici dynamiquement -->
+                <img id="pondImg" src="pond.jpg" alt="Étang">
             </div>
         </div>
 
         <div class="info-panel">
-            <h2>Tarif Week-end</h2>
-            <div class="price">30€ / Week-end</div>
+            <h2>Tarif du week-end</h2>
+            <div class="price">30€</div>
+            <p>Paiement sécurisé par PayPal</p>
             
             <div class="legend">
                 <div class="legend-item">
@@ -467,137 +439,141 @@
                     <span>Réservé</span>
                 </div>
             </div>
-
-            <p style="margin-top: 20px; color: #666;">
-                Cliquez sur un poste disponible pour réserver votre place
-            </p>
         </div>
     </div>
 
-    <a href="admin.html" class="admin-link">⚙️ Admin</a>
+    <div class="edit-mode-info" id="editModeInfo">
+        <span>📍 Mode édition : Glissez-déposez les postes</span>
+        <button class="save-positions-btn" onclick="savePositions()">💾 Enregistrer les positions</button>
+    </div>
 
-    <!-- Modal de réservation -->
     <div class="modal" id="reservationModal">
         <div class="modal-content">
-            <h2>Réserver le Poste <span id="modalSpotNumber"></span></h2>
+            <div class="modal-header">
+                <h2>Réserver le Poste <span id="modalSpotNumber"></span></h2>
+                <p style="color: #666;">Remplissez vos informations</p>
+            </div>
+            
             <form id="reservationForm">
                 <div class="form-group">
                     <label>Nom complet *</label>
                     <input type="text" id="userName" required>
                 </div>
+                
                 <div class="form-group">
                     <label>Email *</label>
                     <input type="email" id="userEmail" required>
                 </div>
+                
                 <div class="form-group">
                     <label>Téléphone *</label>
                     <input type="tel" id="userPhone" required>
                 </div>
-                <div style="margin-top: 30px;">
-                    <button type="submit" class="btn">Payer 30€ avec PayPal</button>
-                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Annuler</button>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Réserver & Payer</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Firebase SDK - Version Compat -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+    <a href="admin.html" class="admin-link">⚙️ Admin</a>
 
     <script>
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4cAaaIQ6ghZFtYxV3TqNWS552EtlwoNM",
-            authDomain: "section-carpe-soufflenheim.firebaseapp.com",
-            projectId: "section-carpe-soufflenheim",
-            storageBucket: "section-carpe-soufflenheim.firebasestorage.app",
-            messagingSenderId: "546487618596",
-            appId: "1:546487618596:web:b64b63fe5bb8adb2a7dcb1"
-        };
+        // 🔥 CONFIGURATION SUPABASE
+        const SUPABASE_URL = 'https://drhsdlzhxkbamwcskblr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaHNkbHpoeGtiYW13Y3NrYmxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNjg0NDMsImV4cCI6MjA4NTg0NDQ0M30.8nifIWVXkk0VXrlP4zeyMpEhIA-JrWh1Y6P94OdlH_g';
+        
+        // Initialiser Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Initialiser Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Rendre disponible globalement
-        window.db = db;
-    </script>
-
-    <script>
-        // Configuration
+        let sessions = [];
         let currentSession = 0;
         let selectedSpot = null;
         let editMode = false;
-
-        // Données chargées depuis Firebase
-        let sessions = [];
-
-        // Positions des postes - chargées depuis config.json
         let spotPositions = [];
 
-        // Charger les sessions depuis Firebase
-        async function loadSessions() {
-            const sessionsRef = db.collection('sessions');
-            const snapshot = await sessionsRef.get();
-            
-            if (snapshot.empty) {
-                // Initialiser les sessions si elles n'existent pas
-                sessions = [
-                    { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
-                ];
-                
-                // Sauvegarder dans Firebase
-                for (let session of sessions) {
-                    await db.collection('sessions').doc(`session${session.id}`).set(session);
-                }
-            } else {
-                // Charger depuis Firebase
-                sessions = [];
-                snapshot.forEach((doc) => {
-                    sessions.push(doc.data());
-                });
-                // Trier par ID
-                sessions.sort((a, b) => a.id - b.id);
-            }
-        }
-
-        // Charger la configuration
+        // Charger config.json pour les positions
         async function loadConfig() {
             try {
                 const response = await fetch('config.json');
                 const config = await response.json();
                 spotPositions = config.spotPositions;
             } catch (error) {
-                console.error('Erreur de chargement de config.json, utilisation des positions par défaut');
-                // Positions par défaut si le fichier n'est pas trouvé
+                console.log('Config non trouvé, utilisation des positions par défaut');
                 spotPositions = [
-                    { top: 15, left: 50 },
-                    { top: 25, left: 75 },
-                    { top: 50, left: 85 },
-                    { top: 75, left: 75 },
-                    { top: 85, left: 50 },
-                    { top: 75, left: 25 },
-                    { top: 50, left: 15 },
-                    { top: 25, left: 25 },
-                    { top: 40, left: 40 },
-                    { top: 40, left: 60 }
+                    { top: 13.378809550005503, left: 67.04166666666667 },
+                    { top: 9.503245681593135, left: 71.625 },
+                    { top: 76.7521179447684, left: 78.54166666666667 },
+                    { top: 75.16778523489933, left: 57.875 },
+                    { top: 62.66916052370998, left: 54.208333333333336 },
+                    { top: 57.21201452304984, left: 49.45833333333333 },
+                    { top: 65.83232478820553, left: 45.625 },
+                    { top: 79.56870942898009, left: 40.791666666666664 },
+                    { top: 41.368687424359116, left: 13.791666666666666 },
+                    { top: 23.588953680272855, left: 21.35546875 }
                 ];
             }
         }
 
-        // Charger les images
-        const pondImg = document.getElementById('pondImg');
-        const logoImg = document.getElementById('logoImg');
+        // Charger les sessions depuis Supabase
+        async function loadSessions() {
+            const { data, error } = await supabase
+                .from('sessions')
+                .select('*')
+                .order('session_id', { ascending: true });
 
-        // Utiliser les images locales
-        pondImg.src = 'pond.jpg';
-        logoImg.src = 'logo.png';
+            if (error) {
+                console.error('Erreur Supabase:', error);
+                // Initialiser avec des données par défaut si la table est vide
+                await initializeDefaultSessions();
+                return;
+            }
 
-        // Initialisation
+            if (data && data.length > 0) {
+                sessions = data.map(row => ({
+                    id: row.session_id,
+                    date: row.date,
+                    reservations: row.reservations || [],
+                    closedSpots: row.closed_spots || []
+                }));
+            } else {
+                await initializeDefaultSessions();
+            }
+        }
+
+        // Initialiser les sessions par défaut
+        async function initializeDefaultSessions() {
+            const defaultSessions = [
+                { session_id: 1, date: 'À configurer', reservations: [], closed_spots: [] },
+                { session_id: 2, date: 'À configurer', reservations: [], closed_spots: [] },
+                { session_id: 3, date: 'À configurer', reservations: [], closed_spots: [] },
+                { session_id: 4, date: 'À configurer', reservations: [], closed_spots: [] }
+            ];
+
+            for (const session of defaultSessions) {
+                await supabase.from('sessions').insert(session);
+            }
+
+            await loadSessions();
+        }
+
+        // Écouter les changements en temps réel
+        function setupRealtimeListener() {
+            supabase
+                .channel('sessions-changes')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'sessions' }, 
+                    async (payload) => {
+                        console.log('Changement détecté:', payload);
+                        await loadSessions();
+                        updateDisplay();
+                    }
+                )
+                .subscribe();
+        }
+
         async function init() {
             await loadConfig();
             await loadSessions();
@@ -605,20 +581,6 @@
             updateDisplay();
             checkEditMode();
             setupRealtimeListener();
-        }
-
-        // Écouter les changements en temps réel
-        function setupRealtimeListener() {
-            const sessionsRef = db.collection('sessions');
-            
-            sessionsRef.onSnapshot((snapshot) => {
-                sessions = [];
-                snapshot.forEach((doc) => {
-                    sessions.push(doc.data());
-                });
-                sessions.sort((a, b) => a.id - b.id);
-                updateDisplay();
-            });
         }
 
         function checkEditMode() {
@@ -670,12 +632,10 @@
         }
 
         function savePositions() {
-            // Créer le contenu du fichier config.json
             const configContent = {
                 spotPositions: spotPositions
             };
             
-            // Créer un fichier téléchargeable
             const dataStr = JSON.stringify(configContent, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
@@ -684,17 +644,15 @@
             link.download = 'config.json';
             link.click();
             
-            alert('✅ Positions enregistrées !\n\n📥 Le fichier config.json a été téléchargé.\n\n⚠️ IMPORTANT : Remplacez le fichier config.json sur votre serveur (Netlify) par ce nouveau fichier pour que tout le monde voie les nouvelles positions.');
+            alert('✅ Positions enregistrées !\n\n📥 Le fichier config.json a été téléchargé.\n\n⚠️ IMPORTANT : Remplacez le fichier config.json sur votre serveur (Netlify) par ce nouveau fichier.');
         }
 
         function createFishingSpots() {
             const container = document.getElementById('pondImageContainer');
             
-            // Supprimer les anciens postes
             const oldSpots = container.querySelectorAll('.fishing-spot');
             oldSpots.forEach(spot => spot.remove());
 
-            // Créer les 10 postes
             for (let i = 1; i <= 10; i++) {
                 const spot = document.createElement('div');
                 spot.className = 'fishing-spot';
@@ -715,15 +673,15 @@
         }
 
         function updateDisplay() {
+            if (sessions.length === 0) return;
+            
             const session = sessions[currentSession];
             document.getElementById('sessionTitle').textContent = `Session ${currentSession + 1}`;
             document.getElementById('sessionDate').textContent = session.date;
             
-            // Mettre à jour les boutons de navigation
             document.getElementById('prevBtn').disabled = currentSession === 0;
             document.getElementById('nextBtn').disabled = currentSession === sessions.length - 1;
             
-            // Mettre à jour l'état des postes
             const spots = document.querySelectorAll('.fishing-spot');
             let available = 10;
             
@@ -786,40 +744,43 @@
             const email = document.getElementById('userEmail').value;
             const phone = document.getElementById('userPhone').value;
             
-            // Simuler le paiement PayPal (en production, intégrez l'API PayPal)
             if (confirm(`Confirmer la réservation du poste ${selectedSpot} pour ${name} ?\n\nVous serez redirigé vers PayPal pour payer 30€.`)) {
-                // Enregistrer la réservation dans Firebase
                 const session = sessions[currentSession];
                 
-                session.reservations.push({
+                const newReservations = [...session.reservations, {
                     spot: selectedSpot,
                     name: name,
                     email: email,
                     phone: phone,
                     date: new Date().toISOString()
-                });
+                }];
                 
-                await db.collection('sessions').doc(`session${session.id}`).update({
-                    reservations: session.reservations
-                });
+                const { error } = await supabase
+                    .from('sessions')
+                    .update({ reservations: newReservations })
+                    .eq('session_id', session.id);
                 
-                // Redirection PayPal (remplacez par votre lien PayPal réel)
-                alert('✅ Réservation enregistrée !\n\nEn production, vous seriez redirigé vers PayPal pour le paiement.');
-                // window.location.href = 'https://www.paypal.com/...';
+                if (error) {
+                    alert('❌ Erreur lors de la réservation. Réessayez.');
+                    console.error(error);
+                    return;
+                }
+                
+                alert('✅ Réservation enregistrée !\n\nVous allez être redirigé vers PayPal.');
+                
+                // Redirection PayPal - REMPLACEZ par votre lien PayPal réel
+                window.location.href = 'https://www.paypal.me/votrecompte/30EUR';
                 
                 closeModal();
-                // updateDisplay sera appelé automatiquement par le listener temps réel
             }
         };
 
-        // Fermer le modal en cliquant en dehors
         document.getElementById('reservationModal').onclick = function(e) {
             if (e.target === this) {
                 closeModal();
             }
         };
 
-        // Initialiser au chargement
         window.onload = init;
     </script>
 </body>

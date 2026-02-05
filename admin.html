@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Section Carpe de Soufflenheim</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         * {
             margin: 0;
@@ -232,7 +236,7 @@
         }
 
         .alert {
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
@@ -243,201 +247,163 @@
             border: 1px solid #c3e6cb;
         }
 
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
-        /* Responsive mobile */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .header {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .content {
-                padding: 20px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .section h2 {
-                font-size: 1.4em;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .stat-card {
-                padding: 20px;
-            }
-
-            .stat-number {
-                font-size: 2.5em;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-buttons .btn {
-                width: 100%;
-            }
-
-            .reservation-item {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
+        .login-container h2 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 30px;
         }
 
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.5em;
-            }
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
 
-            .section h2 {
-                font-size: 1.2em;
-            }
+        .login-form button {
+            width: 100%;
+            padding: 15px;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-            .stat-number {
-                font-size: 2em;
-            }
+        .login-form button:hover {
+            background: #2a5298;
+        }
 
-            .session-card {
-                padding: 15px;
-            }
+        .error-message {
+            color: #f44336;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #adminPanel {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎣 Administration</h1>
-            <p>Section Carpe de Soufflenheim - Gestion des week-ends libre</p>
-            <a href="index.html" class="back-link">← Retour au site</a>
-        </div>
+    <!-- Login -->
+    <div class="login-container" id="loginContainer">
+        <h2>🔐 Administration</h2>
+        <form class="login-form" id="loginForm">
+            <input type="password" id="passwordInput" placeholder="Mot de passe" required>
+            <button type="submit">Se connecter</button>
+        </form>
+        <div class="error-message" id="errorMessage"></div>
+    </div>
 
-        <div class="content">
-            <!-- Statistiques -->
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Réservations</div>
-                    <div class="stat-number" id="totalReservations">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Postes Réservés</div>
-                    <div class="stat-number" id="totalSpots">0</div>
-                    <div style="font-size: 0.9em; margin-top: 5px;">sur 40 possibles</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Revenus Attendus</div>
-                    <div class="stat-number" id="totalRevenue">0€</div>
-                </div>
+    <!-- Panel Admin -->
+    <div id="adminPanel">
+        <div class="container">
+            <div class="header">
+                <h1>⚙️ Administration</h1>
+                <p>Gestion des réservations et sessions</p>
+                <a href="index.html" class="back-link">← Retour au site</a>
             </div>
 
-            <!-- Actions rapides -->
-            <div class="section">
-                <h2>Actions Rapides</h2>
-                <div class="action-buttons">
-                    <button class="btn edit-positions-btn" onclick="editPositions()">
-                        📍 Modifier les positions des postes
-                    </button>
-                    <button class="btn btn-primary" onclick="exportData()">
-                        💾 Exporter les données
-                    </button>
-                    <button class="btn btn-danger" onclick="resetAll()">
-                        🗑️ Réinitialiser tout
-                    </button>
+            <div class="content">
+                <div class="section">
+                    <h2>📊 Statistiques</h2>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Réservations</div>
+                            <div class="stat-number" id="totalReservations">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Postes réservés</div>
+                            <div class="stat-number" id="totalSpots">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Revenus estimés</div>
+                            <div class="stat-number" id="totalRevenue">0€</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Gestion des sessions -->
-            <div class="section">
-                <h2>Gestion des Sessions</h2>
-                <div id="sessionsContainer"></div>
+                <div class="section">
+                    <h2>🎣 Gestion des Sessions</h2>
+                    <div id="sessionsContainer"></div>
+                </div>
+
+                <div class="section">
+                    <h2>🔧 Actions Avancées</h2>
+                    <div class="action-buttons">
+                        <button class="btn edit-positions-btn" onclick="editPositions()">
+                            📍 Modifier les positions des postes
+                        </button>
+                        <button class="btn btn-primary" onclick="exportData()">
+                            📥 Exporter les données
+                        </button>
+                        <button class="btn btn-danger" onclick="resetAll()">
+                            ⚠️ Réinitialiser tout
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK - Version Compat -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
-
     <script>
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4cAaaIQ6ghZFtYxV3TqNWS552EtlwoNM",
-            authDomain: "section-carpe-soufflenheim.firebaseapp.com",
-            projectId: "section-carpe-soufflenheim",
-            storageBucket: "section-carpe-soufflenheim.firebasestorage.app",
-            messagingSenderId: "546487618596",
-            appId: "1:546487618596:web:b64b63fe5bb8adb2a7dcb1"
-        };
+        // 🔥 CONFIGURATION SUPABASE
+        const SUPABASE_URL = 'https://drhsdlzhxkbamwcskblr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaHNkbHpoeGtiYW13Y3NrYmxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNjg0NDMsImV4cCI6MjA4NTg0NDQ0M30.8nifIWVXkk0VXrlP4zeyMpEhIA-JrWh1Y6P94OdlH_g';
+        
+        // Initialiser Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Initialiser Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
-
-    <script>
-        // Protection par mot de passe
-        const ADMIN_PASSWORD = "Souffcarpe1664";
-
-        function checkPassword() {
-            const password = prompt("🔒 Mot de passe administrateur :");
-            if (password !== ADMIN_PASSWORD) {
-                alert("❌ Mot de passe incorrect !");
-                window.location.href = "index.html";
-                return false;
-            }
-            return true;
-        }
-
-        // Vérifier le mot de passe au chargement
-        if (!checkPassword()) {
-            throw new Error("Accès refusé");
-        }
-
+        const ADMIN_PASSWORD = 'Souffcarpe1664';
         let sessions = [];
 
-        // Charger les sessions depuis Firebase
-        async function loadSessions() {
-            const sessionsRef = db.collection('sessions');
-            const snapshot = await sessionsRef.get();
+        // Login
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
             
-            if (snapshot.empty) {
-                // Initialiser les sessions si elles n'existent pas
-                sessions = [
-                    { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
-                    { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
-                ];
-                
-                // Sauvegarder dans Firebase
-                for (let session of sessions) {
-                    await db.collection('sessions').doc(`session${session.id}`).set(session);
-                }
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                init();
             } else {
-                // Charger depuis Firebase
-                sessions = [];
-                snapshot.forEach((doc) => {
-                    sessions.push(doc.data());
-                });
-                sessions.sort((a, b) => a.id - b.id);
+                document.getElementById('errorMessage').textContent = '❌ Mot de passe incorrect';
+            }
+        };
+
+        // Charger les sessions depuis Supabase
+        async function loadSessions() {
+            const { data, error } = await supabase
+                .from('sessions')
+                .select('*')
+                .order('session_id', { ascending: true });
+
+            if (error) {
+                console.error('Erreur Supabase:', error);
+                return;
+            }
+
+            if (data) {
+                sessions = data.map(row => ({
+                    id: row.session_id,
+                    date: row.date,
+                    reservations: row.reservations || [],
+                    closedSpots: row.closed_spots || []
+                }));
             }
         }
 
@@ -450,22 +416,18 @@
 
         // Écouter les changements en temps réel
         function setupRealtimeListener() {
-            const sessionsRef = db.collection('sessions');
-            
-            sessionsRef.onSnapshot((snapshot) => {
-                sessions = [];
-                snapshot.forEach((doc) => {
-                    sessions.push(doc.data());
-                });
-                sessions.sort((a, b) => a.id - b.id);
-                displaySessions();
-                updateStats();
-            });
-        }
-
-        function init() {
-            displaySessions();
-            updateStats();
+            supabase
+                .channel('admin-sessions-changes')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'sessions' }, 
+                    async (payload) => {
+                        console.log('Changement détecté:', payload);
+                        await loadSessions();
+                        displaySessions();
+                        updateStats();
+                    }
+                )
+                .subscribe();
         }
 
         function updateStats() {
@@ -562,10 +524,19 @@
         }
 
         async function updateDate(sessionIndex, newDate) {
-            sessions[sessionIndex].date = newDate;
-            await db.collection('sessions').doc(`session${sessions[sessionIndex].id}`).update({
-                date: newDate
-            });
+            const session = sessions[sessionIndex];
+            
+            const { error } = await supabase
+                .from('sessions')
+                .update({ date: newDate })
+                .eq('session_id', session.id);
+            
+            if (error) {
+                showAlert('❌ Erreur lors de la mise à jour');
+                console.error(error);
+                return;
+            }
+            
             showAlert('✅ Date mise à jour avec succès !');
         }
 
@@ -573,27 +544,42 @@
             const session = sessions[sessionIndex];
             const closedIndex = session.closedSpots.indexOf(spotNumber);
             
+            let newClosedSpots;
             if (closedIndex > -1) {
-                // Rouvrir le poste
-                session.closedSpots.splice(closedIndex, 1);
+                newClosedSpots = session.closedSpots.filter(s => s !== spotNumber);
                 showAlert(`✅ Poste ${spotNumber} rouvert !`);
             } else {
-                // Fermer le poste
-                session.closedSpots.push(spotNumber);
+                newClosedSpots = [...session.closedSpots, spotNumber];
                 showAlert(`🔒 Poste ${spotNumber} fermé !`);
             }
             
-            await db.collection('sessions').doc(`session${session.id}`).update({
-                closedSpots: session.closedSpots
-            });
+            const { error } = await supabase
+                .from('sessions')
+                .update({ closed_spots: newClosedSpots })
+                .eq('session_id', session.id);
+            
+            if (error) {
+                showAlert('❌ Erreur lors de la mise à jour');
+                console.error(error);
+            }
         }
 
         async function deleteReservation(sessionIndex, resIndex) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
-                sessions[sessionIndex].reservations.splice(resIndex, 1);
-                await db.collection('sessions').doc(`session${sessions[sessionIndex].id}`).update({
-                    reservations: sessions[sessionIndex].reservations
-                });
+                const session = sessions[sessionIndex];
+                const newReservations = session.reservations.filter((_, i) => i !== resIndex);
+                
+                const { error } = await supabase
+                    .from('sessions')
+                    .update({ reservations: newReservations })
+                    .eq('session_id', session.id);
+                
+                if (error) {
+                    showAlert('❌ Erreur lors de la suppression');
+                    console.error(error);
+                    return;
+                }
+                
                 showAlert('✅ Réservation supprimée avec succès !');
             }
         }
@@ -616,16 +602,22 @@
         async function resetAll() {
             if (confirm('⚠️ ATTENTION : Cela supprimera toutes les réservations et réinitialisera les dates.\n\nÊtes-vous absolument sûr ?')) {
                 if (confirm('Dernière confirmation : Toutes les données seront perdues !')) {
-                    sessions = [
-                        { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
+                    const defaultSessions = [
+                        { session_id: 1, date: 'À configurer', reservations: [], closed_spots: [] },
+                        { session_id: 2, date: 'À configurer', reservations: [], closed_spots: [] },
+                        { session_id: 3, date: 'À configurer', reservations: [], closed_spots: [] },
+                        { session_id: 4, date: 'À configurer', reservations: [], closed_spots: [] }
                     ];
                     
-                    // Réinitialiser dans Firebase
-                    for (let session of sessions) {
-                        await db.collection('sessions').doc(`session${session.id}`).set(session);
+                    for (const session of defaultSessions) {
+                        await supabase
+                            .from('sessions')
+                            .update({
+                                date: session.date,
+                                reservations: session.reservations,
+                                closed_spots: session.closed_spots
+                            })
+                            .eq('session_id', session.session_id);
                     }
                     
                     showAlert('✅ Tout a été réinitialisé !');
@@ -650,8 +642,6 @@
                 setTimeout(() => alert.remove(), 500);
             }, 3000);
         }
-
-        window.onload = init;
     </script>
 </body>
 </html>
