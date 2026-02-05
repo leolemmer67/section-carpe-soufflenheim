@@ -3,766 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Section Carpe de Soufflenheim - Week-ends Libre</title>
+    <title>Week-End libre Soufflenheim</title>
     
+    <!-- SDK PayPal (Mode Test 'sb' - Remplace par ton vrai Client ID pour la prod) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0fdf4; margin: 0; padding: 20px; text-align: center; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
+        /* Logo */
+        .logo { max-width: 120px; display: block; margin: 0 auto 10px auto; }
+        h1 { color: #166534; margin-top: 0; }
 
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
+        /* --- Bloc Tarif --- */
+        .price-info {
+            background-color: #dcfce7;
+            color: #14532d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #86efac;
         }
+        .price-tag { font-size: 1.4em; font-weight: bold; display: block; margin-bottom: 5px; }
+        .price-details { font-size: 0.95em; display: block; margin-top: 2px; }
 
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 15px;
-            background: white;
-            border-radius: 50%;
+        /* --- Alerte Mobile --- */
+        .rotate-alert {
+            display: none;
+            background-color: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #c2410c;
             padding: 10px;
-            display: flex;
+            border-radius: 8px;
+            margin: 15px auto;
+            max-width: 90%;
+            font-size: 0.9em;
             align-items: center;
             justify-content: center;
-        }
-
-        .logo img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .session-nav {
-            background: #f8f9fa;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .session-info {
-            flex: 1;
-            text-align: center;
-        }
-
-        .session-info h2 {
-            color: #1e3c72;
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-
-        .session-info p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .nav-btn {
-            background: #1e3c72;
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.2em;
-            transition: all 0.3s;
-        }
-
-        .nav-btn:hover {
-            background: #2a5298;
-            transform: scale(1.05);
-        }
-
-        .nav-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: scale(1);
-        }
-
-        .pond-container {
-            position: relative;
-            width: 100%;
-            padding: 40px;
-            background: #f0f0f0;
-        }
-
-        .pond-image {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .pond-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .fishing-spot {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #4CAF50;
-            border: 3px solid white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 10;
-        }
-
-        @media (max-width: 768px) {
-            .fishing-spot {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9em;
-                border: 2px solid white;
-            }
-            
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .subtitle {
-                font-size: 1em;
-            }
-
-            .session-nav {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .pond-container {
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .fishing-spot {
-                width: 35px;
-                height: 35px;
-                font-size: 0.8em;
-                border: 2px solid white;
-            }
-        }
-
-        .fishing-spot:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
-        }
-
-        .fishing-spot.reserved {
-            background: #999;
-            cursor: not-allowed;
-        }
-
-        .fishing-spot.reserved:hover {
-            transform: scale(1);
-        }
-
-        .fishing-spot.dragging {
-            opacity: 0.5;
-            cursor: move;
-        }
-
-        .info-panel {
-            background: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .price {
-            font-size: 2em;
-            color: #1e3c72;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 20px 0;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
             gap: 10px;
         }
-
-        .legend-color {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid white;
+        @media only screen and (max-width: 768px) and (orientation: portrait) {
+            .rotate-alert { display: flex; }
         }
+
+        /* Carte */
+        #map-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 10px auto;
+            border: 4px solid #166534;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        #pond-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .poste-marker {
+            position: absolute;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white; border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            font-size: 14px;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s;
+        }
+
+        .libre { background-color: #22c55e; cursor: pointer; }
+        .libre:hover { transform: translate(-50%, -50%) scale(1.2); z-index: 10; }
+        .occupe { background-color: #ef4444; cursor: not-allowed; opacity: 0.8; }
+        .selectionne { background-color: #fbbf24; border-color: #000; transform: translate(-50%, -50%) scale(1.3); z-index: 20; color: black; }
+
+        /* Formulaire */
+        select, input { padding: 10px; margin: 5px; width: 90%; max-width: 300px; border: 1px solid #ccc; border-radius: 5px; }
+        
+        /* Conteneur PayPal */
+        #paypal-button-container {
+            margin-top: 20px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hidden { display: none; }
 
         .admin-link {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff6b6b;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
-            transition: all 0.3s;
-        }
-
-        .admin-link:hover {
-            background: #ee5a52;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255,107,107,0.5);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .modal-header h2 {
-            color: #1e3c72;
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-
-        .form-buttons {
-            display: flex;
-            gap: 10px;
+            display: inline-block;
             margin-top: 30px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9em;
+            border: 1px solid #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 4px;
         }
-
-        .btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #45a049;
-        }
-
-        .btn-secondary {
-            background: #ddd;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #ccc;
-        }
-
-        .edit-mode-info {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ff9800;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 999;
-            font-weight: bold;
-        }
-
-        .edit-mode-info.active {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .save-positions-btn {
-            background: white;
-            color: #ff9800;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .save-positions-btn:hover {
-            background: #f0f0f0;
-        }
+        .admin-link:hover { background: #f1f5f9; color: #475569; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <div class="header">
-            <div class="logo">
-                <img id="logoImg" src="logo.png" alt="Logo">
-            </div>
-            <h1>Section Carpe de Soufflenheim</h1>
-            <p class="subtitle">🎣 Week-ends Libre - Étang Landgraben</p>
+        <!-- LOGO -->
+        <img src="logo.png" alt="Section Carpe Logo" class="logo">
+        <h1>🎣 Section Carpe de Soufflenheim</h1>
+
+        <!-- Info Tarif -->
+        <div class="price-info">
+            <span class="price-tag">Tarif : 60€ / Week-end</span>
+            <span class="price-details">Ce prix inclut 1 ou 2 pêcheurs par poste (tarif unique).</span>
+            <span class="price-details">Toutes sortes de bateaux interdits, sauf le bateau amorceur est autorisé.</span>
+            <span class="price-details">3 cannes maximum par pêcheur.</span>
         </div>
 
-        <div class="session-nav">
-            <button class="nav-btn" id="prevBtn" onclick="changeSession(-1)">◄</button>
-            <div class="session-info">
-                <h2 id="sessionTitle">Session 1</h2>
-                <p id="sessionDate">Chargement...</p>
-                <p style="margin-top: 10px; color: #4CAF50; font-weight: bold;">
-                    <span id="availableSpots">10</span> postes disponibles
-                </p>
+        <!-- Étape 1 -->
+        <label><strong>1. Choisissez une session :</strong></label><br>
+        <select id="sessionSelect">
+            <option value="">Chargement des dates...</option>
+        </select>
+
+        <!-- Étape 2 : Carte -->
+        <div id="map-section" class="hidden">
+
+            <!-- Alerte Mobile -->
+            <div class="rotate-alert">
+                <span style="font-size: 20px;">🔄</span>
+                <div><strong>Conseil :</strong> Tournez votre téléphone à l'horizontale pour mieux voir les postes.</div>
             </div>
-            <button class="nav-btn" id="nextBtn" onclick="changeSession(1)">►</button>
+
+            <p><strong>2. Cliquez sur un poste vert (🟢) :</strong></p>
+
+            <div id="map-wrapper">
+                <img src="pond.jpg" id="pond-image" alt="Plan de l'étang">
+                <!-- JS insère les bulles ici -->
+            </div>
         </div>
 
-        <div class="pond-container">
-            <div class="pond-image" id="pondImageContainer">
-                <img id="pondImg" src="pond.jpg" alt="Étang">
-            </div>
-        </div>
+        <!-- Étape 3 : Formulaire et Paiement -->
+        <div id="form-section" class="hidden">
+            <h3>Réservation du Poste N° <span id="displayPoste">?</span></h3>
 
-        <div class="info-panel">
-            <h2>Tarif du week-end</h2>
-            <div class="price">30€</div>
-            <p>Paiement sécurisé par PayPal</p>
+            <p style="color: #555; font-size: 0.9em; margin-bottom: 15px;">
+                Veuillez remplir vos coordonnées ci-dessous.<br>
+                Le paiement sécurisé de <strong>60€</strong> validera la réservation.
+            </p>
+
+            <input type="text" id="nom" placeholder="Votre Nom (et celui du binôme si applicable)">
+            <input type="email" id="email" placeholder="Votre Email (pour confirmation)">
+            <input type="tel" id="tel" placeholder="Téléphone">
             
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #4CAF50;"></div>
-                    <span>Disponible</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #999;"></div>
-                    <span>Réservé</span>
-                </div>
-            </div>
-        </div>
+            <!-- Zone PayPal -->
+            <div id="paypal-button-container" style="min-height: 150px; margin-top: 20px;">
+    <p id="paypal-loading" style="color: orange; font-weight: bold;">
+        ⌛ Chargement de PayPal...<br>
+        <span style="font-size:0.8em; color: black; font-weight: normal;">
+        (Si ce message reste affiché, vérifiez votre connexion ou désactivez AdBlock)
+        </span>
+    </p>
+</div>
+
+        <br>
+        <a href="admin.html" class="admin-link">🔒 Administration</a>
     </div>
 
-    <div class="edit-mode-info" id="editModeInfo">
-        <span>📍 Mode édition : Glissez-déposez les postes</span>
-        <button class="save-positions-btn" onclick="savePositions()">💾 Enregistrer les positions</button>
-    </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-    <div class="modal" id="reservationModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Réserver le Poste <span id="modalSpotNumber"></span></h2>
-                <p style="color: #666;">Remplissez vos informations</p>
-            </div>
-            
-            <form id="reservationForm">
-                <div class="form-group">
-                    <label>Nom complet *</label>
-                    <input type="text" id="userName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" id="userEmail" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Téléphone *</label>
-                    <input type="tel" id="userPhone" required>
-                </div>
-                
-                <div class="form-buttons">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Réserver & Payer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <a href="admin.html" class="admin-link">⚙️ Admin</a>
-
-    <script>
-        // 🔥 CONFIGURATION SUPABASE (API REST - Sans SDK)
         const SUPABASE_URL = 'https://drhsdlzhxkbamwcskblr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaHNkbHpoeGtiYW13Y3NrYmxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNjg0NDMsImV4cCI6MjA4NTg0NDQ0M30.8nifIWVXkk0VXrlP4zeyMpEhIA-JrWh1Y6P94OdlH_g';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let sessions = [];
-        let currentSession = 0;
-        let selectedSpot = null;
-        let editMode = false;
-        let spotPositions = [];
-        let realtimeInterval = null;
-
-        // API REST Supabase - GET
-        async function supabaseGet() {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*&order=session_id.asc`, {
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                }
-            });
-            return await response.json();
-        }
-
-        // API REST Supabase - UPDATE
-        async function supabaseUpdate(sessionId, data) {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/sessions?session_id=eq.${sessionId}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(data)
-            });
-            return response.ok;
-        }
-
-        // Charger config.json
-        async function loadConfig() {
-            try {
-                const response = await fetch('config.json');
-                const config = await response.json();
-                spotPositions = config.spotPositions;
-            } catch (error) {
-                spotPositions = [
-                    { top: 13.378809550005503, left: 67.04166666666667 },
-                    { top: 9.503245681593135, left: 71.625 },
-                    { top: 76.7521179447684, left: 78.54166666666667 },
-                    { top: 75.16778523489933, left: 57.875 },
-                    { top: 62.66916052370998, left: 54.208333333333336 },
-                    { top: 57.21201452304984, left: 49.45833333333333 },
-                    { top: 65.83232478820553, left: 45.625 },
-                    { top: 79.56870942898009, left: 40.791666666666664 },
-                    { top: 41.368687424359116, left: 13.791666666666666 },
-                    { top: 23.588953680272855, left: 21.35546875 }
-                ];
-            }
-        }
-
-        async function loadSessions() {
-            try {
-                const data = await supabaseGet();
-                if (data && data.length > 0) {
-                    sessions = data.map(row => ({
-                        id: row.session_id,
-                        date: row.date,
-                        reservations: row.reservations || [],
-                        closedSpots: row.closed_spots || []
-                    }));
-                } else {
-                    sessions = [
-                        { id: 1, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 2, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 3, date: 'À configurer', reservations: [], closedSpots: [] },
-                        { id: 4, date: 'À configurer', reservations: [], closedSpots: [] }
-                    ];
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
-        }
-
-        function setupRealtimeListener() {
-            realtimeInterval = setInterval(async () => {
-                await loadSessions();
-                updateDisplay();
-            }, 3000);
-        }
+        let currentSessionId = null;
+        let selectedPoste = null;
+        let postesCoords = [];
 
         async function init() {
-            await loadConfig();
-            await loadSessions();
-            createFishingSpots();
-            updateDisplay();
-            checkEditMode();
-            setupRealtimeListener();
-        }
+            // Charger Coordonnées
+            const { data: configs } = await supabase.from('postes_config').select('*');
+            postesCoords = configs || [];
 
-        function checkEditMode() {
-            const urlParams = new URLSearchParams(window.location.search);
-            editMode = urlParams.get('edit') === 'true';
-            if (editMode) {
-                document.getElementById('editModeInfo').classList.add('active');
-                enableDragAndDrop();
-            }
-        }
+            // Charger Sessions futures
+            const { data: sessions } = await supabase
+                .from('sessions')
+                .select('*')
+                .gte('date_fin', new Date().toISOString().split('T')[0]) 
+                .order('date_debut');
 
-        function enableDragAndDrop() {
-            const spots = document.querySelectorAll('.fishing-spot');
-            spots.forEach(spot => {
-                spot.draggable = true;
-                spot.style.cursor = 'move';
-                
-                spot.addEventListener('dragstart', (e) => {
-                    spot.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
+            const select = document.getElementById('sessionSelect');
+            select.innerHTML = '<option value="">-- Sélectionnez une date --</option>';
+
+            if(sessions) {
+                sessions.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.nom} (${s.date_debut} au ${s.date_fin})`;
+                    select.appendChild(opt);
                 });
-
-                spot.addEventListener('dragend', (e) => {
-                    spot.classList.remove('dragging');
-                    const rect = document.getElementById('pondImageContainer').getBoundingClientRect();
-                    const spotRect = spot.getBoundingClientRect();
-                    
-                    const spotIndex = parseInt(spot.dataset.spot) - 1;
-                    spotPositions[spotIndex] = {
-                        top: ((spotRect.top - rect.top + spotRect.height/2) / rect.height * 100),
-                        left: ((spotRect.left - rect.left + spotRect.width/2) / rect.width * 100)
-                    };
-                });
-            });
-
-            const container = document.getElementById('pondImageContainer');
-            container.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const dragging = document.querySelector('.dragging');
-                if (dragging) {
-                    const rect = container.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    dragging.style.left = (x / rect.width * 100) + '%';
-                    dragging.style.top = (y / rect.height * 100) + '%';
-                }
-            });
-        }
-
-        function savePositions() {
-            const configContent = { spotPositions: spotPositions };
-            const dataStr = JSON.stringify(configContent, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'config.json';
-            link.click();
-            alert('✅ Positions enregistrées !');
-        }
-
-        function createFishingSpots() {
-            const container = document.getElementById('pondImageContainer');
-            const oldSpots = container.querySelectorAll('.fishing-spot');
-            oldSpots.forEach(spot => spot.remove());
-
-            for (let i = 1; i <= 10; i++) {
-                const spot = document.createElement('div');
-                spot.className = 'fishing-spot';
-                spot.textContent = i;
-                spot.dataset.spot = i;
-                
-                const pos = spotPositions[i - 1];
-                spot.style.top = pos.top + '%';
-                spot.style.left = pos.left + '%';
-                spot.style.transform = 'translate(-50%, -50%)';
-                
-                if (!editMode) {
-                    spot.onclick = () => openReservationModal(i);
-                }
-                
-                container.appendChild(spot);
             }
-        }
 
-        function updateDisplay() {
-            if (sessions.length === 0) return;
-            
-            const session = sessions[currentSession];
-            document.getElementById('sessionTitle').textContent = `Session ${currentSession + 1}`;
-            document.getElementById('sessionDate').textContent = session.date;
-            
-            document.getElementById('prevBtn').disabled = currentSession === 0;
-            document.getElementById('nextBtn').disabled = currentSession === sessions.length - 1;
-            
-            const spots = document.querySelectorAll('.fishing-spot');
-            let available = 10;
-            
-            spots.forEach(spot => {
-                const spotNumber = parseInt(spot.dataset.spot);
-                const isReserved = session.reservations.some(r => r.spot === spotNumber);
-                const isClosed = session.closedSpots && session.closedSpots.includes(spotNumber);
-                
-                if (isReserved || isClosed) {
-                    spot.classList.add('reserved');
-                    available--;
+            select.addEventListener('change', (e) => {
+                currentSessionId = e.target.value;
+                if(currentSessionId) {
+                    loadMapStatus();
+                    document.getElementById('map-section').classList.remove('hidden');
                 } else {
-                    spot.classList.remove('reserved');
+                    document.getElementById('map-section').classList.add('hidden');
+                    document.getElementById('form-section').classList.add('hidden');
                 }
             });
-            
-            document.getElementById('availableSpots').textContent = available;
-        }
 
-        function changeSession(direction) {
-            const newSession = currentSession + direction;
-            if (newSession >= 0 && newSession < sessions.length) {
-                currentSession = newSession;
-                updateDisplay();
-            }
-        }
+            // Initialiser les boutons PayPal une seule fois
+           function renderPayPalButton() {
+    // Vérification de sécurité
+    if (typeof paypal === 'undefined') {
+        document.getElementById('paypal-loading').innerHTML = 
+            "❌ <strong>Erreur :</strong> Le module PayPal n'a pas chargé.<br>" +
+            "Vérifiez que la ligne &lt;script src='...paypal...'&gt; est bien dans le &lt;head&gt;.";
+        return;
+    }
 
-        function openReservationModal(spotNumber) {
-            if (editMode) return;
-            
-            const session = sessions[currentSession];
-            const isReserved = session.reservations.some(r => r.spot === spotNumber);
-            const isClosed = session.closedSpots && session.closedSpots.includes(spotNumber);
-            
-            if (isReserved) {
-                alert('Ce poste est déjà réservé pour cette session.');
-                return;
-            }
-            
-            if (isClosed) {
-                alert('Ce poste est temporairement fermé pour cette session.');
-                return;
-            }
-            
-            selectedSpot = spotNumber;
-            document.getElementById('modalSpotNumber').textContent = spotNumber;
-            document.getElementById('reservationModal').classList.add('active');
-        }
+    try {
+        paypal.Buttons({
+            // Vérifier les champs avant d'ouvrir PayPal
+            onClick: (data, actions) => {
+                const nom = document.getElementById('nom').value;
+                const email = document.getElementById('email').value;
+                const tel = document.getElementById('tel').value;
+                const poste = document.getElementById('displayPoste').innerText;
 
-        function closeModal() {
-            document.getElementById('reservationModal').classList.remove('active');
-            document.getElementById('reservationForm').reset();
-            selectedSpot = null;
-        }
-
-        document.getElementById('reservationForm').onsubmit = async function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('userName').value;
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
-            
-            if (confirm(`Confirmer la réservation du poste ${selectedSpot} pour ${name} ?\n\nVous serez redirigé vers PayPal pour payer 30€.`)) {
-                const session = sessions[currentSession];
-                
-                const newReservations = [...session.reservations, {
-                    spot: selectedSpot,
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    date: new Date().toISOString()
-                }];
-                
-                const success = await supabaseUpdate(session.id, { reservations: newReservations });
-                
-                if (!success) {
-                    alert('❌ Erreur lors de la réservation. Réessayez.');
-                    return;
+                if (!nom || !email || !tel || poste === '?') {
+                    alert("Veuillez remplir TOUS les champs avant de payer.");
+                    return actions.reject();
                 }
-                
-                alert('✅ Réservation enregistrée !');
-                window.location.href = 'https://www.paypal.me/votrecompte/30EUR';
-                closeModal();
+                return actions.resolve();
+            },
+            createOrder: (data, actions) => {
+                return actions.order.create({
+                    purchase_units: [{
+                        description: `Réservation Poste ${selectedPoste}`,
+                        amount: { value: '60.00' }
+                    }]
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(async (details) => {
+                    // Masquer le formulaire pour éviter double clic
+                    document.getElementById('form-section').innerHTML = "<h3>✅ Paiement validé ! Enregistrement...</h3>";
+                    
+                    const nom = document.getElementById('nom').value;
+                    const email = document.getElementById('email').value;
+                    const tel = document.getElementById('tel').value;
+
+                    const { error } = await supabase.from('reservations').insert({
+                        session_id: currentSessionId,
+                        poste_numero: selectedPoste,
+                        nom_client: nom,
+                        email_client: email,
+                        telephone_client: tel
+                    });
+
+                    if(error) {
+                        alert("Paiement reçu mais erreur d'enregistrement base de données. Contactez l'admin.");
+                    } else {
+                        alert("✅ Réservation confirmée !");
+                        location.reload();
+                    }
+                });
+            },
+            onError: (err) => {
+                console.error('Erreur PayPal:', err);
+                alert("Erreur lors de l'initialisation du paiement.");
             }
-        };
+        }).render('#paypal-button-container');
+    } catch (error) {
+        console.error("Crash PayPal:", error);
+        document.getElementById('paypal-loading').innerText = "Erreur technique PayPal (voir console F12)";
+    }
+}
 
-        document.getElementById('reservationModal').onclick = function(e) {
-            if (e.target === this) closeModal();
-        };
 
-        window.onbeforeunload = function() {
-            if (realtimeInterval) clearInterval(realtimeInterval);
-        };
+        async function loadMapStatus() {
+            const wrapper = document.getElementById('map-wrapper');
+            document.querySelectorAll('.poste-marker').forEach(el => el.remove());
 
-        window.onload = init;
+            const { data: resas } = await supabase
+                .from('reservations')
+                .select('poste_numero')
+                .eq('session_id', currentSessionId);
+
+            const taken = resas ? resas.map(r => r.poste_numero) : [];
+
+            for(let i=1; i<=10; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'poste-marker';
+                bubble.innerText = i;
+
+                const config = postesCoords.find(c => c.poste_id === i);
+                let left = '50%', top = '50%'; 
+                if(config) {
+                    left = config.pos_x + '%';
+                    top = config.pos_y + '%';
+                }
+
+                bubble.style.left = left;
+                bubble.style.top = top;
+
+                if(taken.includes(i)) {
+                    bubble.classList.add('occupe');
+                    bubble.title = "Déjà réservé";
+                } else {
+                    bubble.classList.add('libre');
+                    bubble.onclick = () => selectPoste(i, bubble);
+                }
+
+                wrapper.appendChild(bubble);
+            }
+        }
+
+        function selectPoste(id, element) {
+            document.querySelectorAll('.selectionne').forEach(el => el.classList.remove('selectionne'));
+            element.classList.add('selectionne');
+            selectedPoste = id;
+
+            document.getElementById('displayPoste').innerText = id;
+            document.getElementById('form-section').classList.remove('hidden');
+            document.getElementById('form-section').scrollIntoView({behavior: "smooth"});
+        }
+
+        // --- FONCTION PAYPAL ---
+        function renderPayPalButton() {
+            paypal.Buttons({
+                // Vérifier les champs avant d'ouvrir PayPal
+                onClick: (data, actions) => {
+                    const nom = document.getElementById('nom').value;
+                    const email = document.getElementById('email').value;
+                    const tel = document.getElementById('tel').value;
+
+                    if (!nom || !email || !tel || !selectedPoste) {
+                        alert("Veuillez remplir TOUS les champs avant de payer.");
+                        return actions.reject();
+                    }
+                    return actions.resolve();
+                },
+                // Créer la transaction
+                createOrder: (data, actions) => {
+                    return actions.order.create({
+                        purchase_units: [{
+                            description: `Réservation Poste ${selectedPoste} - Soufflenheim`,
+                            amount: {
+                                value: '60.00' // PRIX ICI
+                            }
+                        }]
+                    });
+                },
+                // Quand le paiement est validé
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then(async (details) => {
+                        // Paiement OK, on insère dans Supabase
+                        console.log('Paiement réussi par ' + details.payer.name.given_name);
+                        
+                        const nom = document.getElementById('nom').value;
+                        const email = document.getElementById('email').value;
+                        const tel = document.getElementById('tel').value;
+
+                        const { error } = await supabase.from('reservations').insert({
+                            session_id: currentSessionId,
+                            poste_numero: selectedPoste,
+                            nom_client: nom,
+                            email_client: email,
+                            telephone_client: tel
+                            // On pourrait ajouter une colonne 'paypal_order_id': details.id si tu l'as créée
+                        });
+
+                        if(error) {
+                            alert("Paiement validé mais erreur technique lors de l'enregistrement. Contactez-nous.");
+                            console.error(error);
+                        } else {
+                            alert("✅ Paiement de 60€ reçu ! Votre réservation est validée.");
+                            location.reload();
+                        }
+                    });
+                },
+                onError: (err) => {
+                    console.error('Erreur PayPal', err);
+                    alert("Le paiement n'a pas pu aboutir.");
+                }
+            }).render('#paypal-button-container');
+        }
+
+        init();
     </script>
 </body>
 </html>
+
